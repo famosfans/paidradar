@@ -1,0 +1,21 @@
+# Dependencies
+/vendor/
+/node_modules/
+
+# wp-env / local WordPress
+/.wp-env-home/
+.wp-env.override.json
+
+# Build / test artifacts
+/build/
+/dist/
+.phpunit.result.cache
+/coverage/
+composer.lock
+package-lock.json
+
+# Editor / OS
+.idea/
+.vscode/
+*.swp
+.DS_Store

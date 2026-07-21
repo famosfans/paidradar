@@ -1,0 +1,50 @@
+{
+	"name": "famosmedia/ordermend",
+	"description": "OrderMend – WooCommerce Payment Recovery & Stuck Order Fix. Finds paid-but-stuck WooCommerce orders (missed webhook), re-queries the gateway read-only, completes them correctly and writes an audit trail.",
+	"type": "wordpress-plugin",
+	"license": "GPL-2.0-or-later",
+	"keywords": [
+		"woocommerce",
+		"payment-recovery",
+		"stripe",
+		"paypal",
+		"webhook",
+		"reconciliation",
+		"audit"
+	],
+	"homepage": "https://ordermend.com/",
+	"authors": [
+		{
+			"name": "famosMedia Technologies Ltd.",
+			"homepage": "https://famosmedia.com/"
+		}
+	],
+	"require": {
+		"php": ">=7.4"
+	},
+	"require-dev": {
+		"phpunit/phpunit": "^9.6",
+		"brain/monkey": "^2.6",
+		"wp-coding-standards/wpcs": "^3.0",
+		"dealerdirect/phpcodesniffer-composer-installer": "^1.0"
+	},
+	"autoload": {
+		"psr-4": {
+			"OrderMend\\": "includes/"
+		}
+	},
+	"autoload-dev": {
+		"psr-4": {
+			"OrderMend\\Tests\\": "tests/"
+		}
+	},
+	"config": {
+		"allow-plugins": {
+			"dealerdirect/phpcodesniffer-composer-installer": true
+		}
+	},
+	"scripts": {
+		"test": "phpunit",
+		"lint": "phpcs --standard=WordPress includes ordermend.php"
+	}
+}
