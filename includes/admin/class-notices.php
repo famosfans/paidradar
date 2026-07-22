@@ -2,10 +2,10 @@
 /**
  * Admin notices after a recovery run.
  *
- * @package OrderMend
+ * @package PaidRadar
  */
 
-namespace OrderMend\Admin;
+namespace PaidRadar\Admin;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -15,7 +15,7 @@ defined( 'ABSPATH' ) || exit;
  */
 class Notices {
 
-	const TRANSIENT = 'ordermend_recent_recoveries';
+	const TRANSIENT = 'paidradar_recent_recoveries';
 
 	/**
 	 * Register hooks.
@@ -58,8 +58,8 @@ class Notices {
 		echo '<div class="notice notice-success is-dismissible"><p>';
 		printf(
 			/* translators: 1: number of orders, 2: total amount, 3: currency. */
-			esc_html( _n( 'OrderMend recovered %1$d paid-but-stuck order (%2$s %3$s).', 'OrderMend recovered %1$d paid-but-stuck orders (%2$s %3$s).', $count, 'ordermend' ) ),
-			$count,
+			esc_html( _n( 'PaidRadar recovered %1$d paid-but-stuck order (%2$s %3$s).', 'PaidRadar recovered %1$d paid-but-stuck orders (%2$s %3$s).', $count, 'paidradar' ) ),
+			esc_html( $count ),
 			esc_html( number_format_i18n( $total, 2 ) ),
 			esc_html( $currency )
 		);

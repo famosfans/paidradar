@@ -2,10 +2,10 @@
 /**
  * Adapter registry: maps payment methods to status adapters.
  *
- * @package OrderMend
+ * @package PaidRadar
  */
 
-namespace OrderMend\Adapters;
+namespace PaidRadar\Adapters;
 
 defined( 'ABSPATH' ) || exit;
 

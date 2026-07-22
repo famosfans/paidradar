@@ -2,20 +2,20 @@
 /**
  * Unit tests for the Stripe adapter.
  *
- * @package OrderMend
+ * @package PaidRadar
  */
 
-namespace OrderMend\Tests\Unit;
+namespace PaidRadar\Tests\Unit;
 
 use Brain\Monkey;
 use Brain\Monkey\Functions;
 use Mockery;
-use OrderMend\Adapters\Payment_Status;
-use OrderMend\Adapters\Stripe_Adapter;
+use PaidRadar\Adapters\Payment_Status;
+use PaidRadar\Adapters\Stripe_Adapter;
 use PHPUnit\Framework\TestCase;
 
 /**
- * @covers \OrderMend\Adapters\Stripe_Adapter
+ * @covers \PaidRadar\Adapters\Stripe_Adapter
  */
 class StripeAdapterTest extends TestCase {
 

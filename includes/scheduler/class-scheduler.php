@@ -2,13 +2,13 @@
 /**
  * Scan scheduling via Action Scheduler.
  *
- * @package OrderMend
+ * @package PaidRadar
  */
 
-namespace OrderMend\Scheduler;
+namespace PaidRadar\Scheduler;
 
-use OrderMend\Recovery\Order_Scanner;
-use OrderMend\Recovery\Reconciler;
+use PaidRadar\Recovery\Order_Scanner;
+use PaidRadar\Recovery\Reconciler;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -17,8 +17,8 @@ defined( 'ABSPATH' ) || exit;
  */
 class Scheduler {
 
-	const HOOK  = 'ordermend_daily_scan';
-	const GROUP = 'ordermend';
+	const HOOK  = 'paidradar_daily_scan';
+	const GROUP = 'paidradar';
 
 	/**
 	 * Order scanner.
@@ -64,8 +64,20 @@ class Scheduler {
 		if ( ! function_exists( 'as_schedule_recurring_action' ) || ! function_exists( 'as_next_scheduled_action' ) ) {
 			return;
 		}
+		/**
+		 * Filter the recurring recovery-scan interval in seconds.
+		 *
+		 * Extensions (PaidRadar Pro) lower this for more frequent scans, e.g.
+		 * 900 for every 15 minutes. Floored at 60s. Call {@see reschedule()}
+		 * after changing the value at runtime so the change takes effect.
+		 *
+		 * @param int $interval Interval in seconds (default DAY_IN_SECONDS).
+		 */
+		$interval = (int) apply_filters( 'paidradar_scan_interval', DAY_IN_SECONDS );
+		$interval = max( 60, $interval );
+
 		if ( false === as_next_scheduled_action( self::HOOK, array(), self::GROUP ) ) {
-			as_schedule_recurring_action( time() + HOUR_IN_SECONDS, DAY_IN_SECONDS, self::HOOK, array(), self::GROUP );
+			as_schedule_recurring_action( time() + $interval, $interval, self::HOOK, array(), self::GROUP );
 		}
 	}
 
@@ -78,6 +90,20 @@ class Scheduler {
 		if ( function_exists( 'as_unschedule_all_actions' ) ) {
 			as_unschedule_all_actions( self::HOOK, array(), self::GROUP );
 		}
+	}
+
+	/**
+	 * Unschedule and re-schedule the recurring scan.
+	 *
+	 * Extensions call this after changing the `paidradar_scan_interval` filter
+	 * value (e.g. when a Pro setting is saved) so the new interval takes effect
+	 * immediately instead of on the next natural reschedule.
+	 *
+	 * @return void
+	 */
+	public function reschedule() {
+		$this->unschedule();
+		$this->maybe_schedule();
 	}
 
 	/**

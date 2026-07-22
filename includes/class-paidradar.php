@@ -2,33 +2,33 @@
 /**
  * Plugin container / bootstrap.
  *
- * @package OrderMend
+ * @package PaidRadar
  */
 
-namespace OrderMend;
+namespace PaidRadar;
 
-use OrderMend\Adapters\Adapter_Registry;
-use OrderMend\Adapters\Stripe_Adapter;
-use OrderMend\Adapters\PayPal_Adapter;
-use OrderMend\Recovery\Order_Scanner;
-use OrderMend\Recovery\Reconciler;
-use OrderMend\Recovery\Recovery_Lock;
-use OrderMend\Audit\Audit_Log;
-use OrderMend\Scheduler\Scheduler;
-use OrderMend\Admin\Admin;
-use OrderMend\Admin\Notices;
+use PaidRadar\Adapters\Adapter_Registry;
+use PaidRadar\Adapters\Stripe_Adapter;
+use PaidRadar\Adapters\PayPal_Adapter;
+use PaidRadar\Recovery\Order_Scanner;
+use PaidRadar\Recovery\Reconciler;
+use PaidRadar\Recovery\Recovery_Lock;
+use PaidRadar\Audit\Audit_Log;
+use PaidRadar\Scheduler\Scheduler;
+use PaidRadar\Admin\Admin;
+use PaidRadar\Admin\Notices;
 
 defined( 'ABSPATH' ) || exit;
 
 /**
  * Singleton container. Wires all services and registers hooks.
  */
-final class OrderMend {
+final class PaidRadar {
 
 	/**
 	 * Singleton instance.
 	 *
-	 * @var OrderMend|null
+	 * @var PaidRadar|null
 	 */
 	private static $instance = null;
 
@@ -49,7 +49,7 @@ final class OrderMend {
 	/**
 	 * Get the singleton instance.
 	 *
-	 * @return OrderMend
+	 * @return PaidRadar
 	 */
 	public static function instance() {
 		if ( null === self::$instance ) {
@@ -97,11 +97,23 @@ final class OrderMend {
 			'admin'      => $admin,
 		);
 
-		load_plugin_textdomain( 'ordermend', false, dirname( ORDERMEND_BASENAME ) . '/languages' );
+		load_plugin_textdomain( 'paidradar', false, dirname( PAIDRADAR_BASENAME ) . '/languages' );
 
 		$scheduler->register_hooks();
 		$admin->register_hooks();
 		$notices->register_hooks();
+
+		/**
+		 * Fires once all PaidRadar services are wired and hooks registered.
+		 *
+		 * Extensions (e.g. PaidRadar Pro) hook this to register additional
+		 * payment adapters, admin settings sections and alert channels via the
+		 * container's service accessor, e.g.
+		 * `$plugin->get( 'registry' )->register( new My_Adapter() )`.
+		 *
+		 * @param PaidRadar $plugin The plugin container (use ->get( $name )).
+		 */
+		do_action( 'paidradar_loaded', $this );
 	}
 
 	/**

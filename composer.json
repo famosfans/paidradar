@@ -1,6 +1,6 @@
 {
-	"name": "famosmedia/ordermend",
-	"description": "OrderMend – WooCommerce Payment Recovery & Stuck Order Fix. Finds paid-but-stuck WooCommerce orders (missed webhook), re-queries the gateway read-only, completes them correctly and writes an audit trail.",
+	"name": "famosmedia/paidradar",
+	"description": "PaidRadar – WooCommerce Payment Recovery & Stuck Order Fix. Finds paid-but-stuck WooCommerce orders (missed webhook), re-queries the gateway read-only, completes them correctly and writes an audit trail.",
 	"type": "wordpress-plugin",
 	"license": "GPL-2.0-or-later",
 	"keywords": [
@@ -12,7 +12,7 @@
 		"reconciliation",
 		"audit"
 	],
-	"homepage": "https://ordermend.com/",
+	"homepage": "https://paidradar.com/",
 	"authors": [
 		{
 			"name": "famosMedia Technologies Ltd.",
@@ -30,12 +30,12 @@
 	},
 	"autoload": {
 		"psr-4": {
-			"OrderMend\\": "includes/"
+			"PaidRadar\\": "includes/"
 		}
 	},
 	"autoload-dev": {
 		"psr-4": {
-			"OrderMend\\Tests\\": "tests/"
+			"PaidRadar\\Tests\\": "tests/"
 		}
 	},
 	"config": {
@@ -45,6 +45,6 @@
 	},
 	"scripts": {
 		"test": "phpunit",
-		"lint": "phpcs --standard=WordPress includes ordermend.php"
+		"lint": "phpcs --standard=WordPress includes paidradar.php"
 	}
 }

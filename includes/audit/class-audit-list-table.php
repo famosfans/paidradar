@@ -2,10 +2,10 @@
 /**
  * Admin list table for the audit log.
  *
- * @package OrderMend
+ * @package PaidRadar
  */
 
-namespace OrderMend\Audit;
+namespace PaidRadar\Audit;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -14,7 +14,7 @@ if ( ! class_exists( '\WP_List_Table' ) ) {
 }
 
 /**
- * Renders the ordermend_log table in the admin.
+ * Renders the paidradar_log table in the admin.
  */
 class Audit_List_Table extends \WP_List_Table {
 
@@ -34,8 +34,8 @@ class Audit_List_Table extends \WP_List_Table {
 		$this->log = $log;
 		parent::__construct(
 			array(
-				'singular' => 'ordermend_event',
-				'plural'   => 'ordermend_events',
+				'singular' => 'paidradar_event',
+				'plural'   => 'paidradar_events',
 				'ajax'     => false,
 			)
 		);
@@ -48,14 +48,14 @@ class Audit_List_Table extends \WP_List_Table {
 	 */
 	public function get_columns() {
 		return array(
-			'created_at' => __( 'Date', 'ordermend' ),
-			'order_id'   => __( 'Order', 'ordermend' ),
-			'gateway'    => __( 'Gateway', 'ordermend' ),
-			'event'      => __( 'Event', 'ordermend' ),
-			'psp_status' => __( 'Gateway status', 'ordermend' ),
-			'transition' => __( 'Status change', 'ordermend' ),
-			'amount'     => __( 'Amount', 'ordermend' ),
-			'actor'      => __( 'Triggered by', 'ordermend' ),
+			'created_at' => __( 'Date', 'paidradar' ),
+			'order_id'   => __( 'Order', 'paidradar' ),
+			'gateway'    => __( 'Gateway', 'paidradar' ),
+			'event'      => __( 'Event', 'paidradar' ),
+			'psp_status' => __( 'Gateway status', 'paidradar' ),
+			'transition' => __( 'Status change', 'paidradar' ),
+			'amount'     => __( 'Amount', 'paidradar' ),
+			'actor'      => __( 'Triggered by', 'paidradar' ),
 		);
 	}
 
@@ -127,12 +127,12 @@ class Audit_List_Table extends \WP_List_Table {
 	public function column_event( $item ) {
 		$event  = (string) ( $item['event'] ?? '' );
 		$labels = array(
-			'recovered'        => __( 'Recovered', 'ordermend' ),
-			'drift'            => __( 'Drift', 'ordermend' ),
-			'confirmed_unpaid' => __( 'Confirmed unpaid', 'ordermend' ),
-			'check_failed'     => __( 'Check failed', 'ordermend' ),
-			'unsupported'      => __( 'Unsupported', 'ordermend' ),
-			'detected'         => __( 'Detected', 'ordermend' ),
+			'recovered'        => __( 'Recovered', 'paidradar' ),
+			'drift'            => __( 'Drift', 'paidradar' ),
+			'confirmed_unpaid' => __( 'Confirmed unpaid', 'paidradar' ),
+			'check_failed'     => __( 'Check failed', 'paidradar' ),
+			'unsupported'      => __( 'Unsupported', 'paidradar' ),
+			'detected'         => __( 'Detected', 'paidradar' ),
 		);
 		$label = $labels[ $event ] ?? $event;
 		return '<code>' . esc_html( $label ) . '</code>';
@@ -177,6 +177,6 @@ class Audit_List_Table extends \WP_List_Table {
 	 * @return void
 	 */
 	public function no_items() {
-		esc_html_e( 'No recovery events logged yet.', 'ordermend' );
+		esc_html_e( 'No recovery events logged yet.', 'paidradar' );
 	}
 }

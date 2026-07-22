@@ -2,10 +2,10 @@
 /**
  * Stripe read-only status adapter.
  *
- * @package OrderMend
+ * @package PaidRadar
  */
 
-namespace OrderMend\Adapters;
+namespace PaidRadar\Adapters;
 
 defined( 'ABSPATH' ) || exit;
 

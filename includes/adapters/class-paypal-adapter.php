@@ -2,10 +2,10 @@
 /**
  * PayPal (PPCP) read-only status adapter.
  *
- * @package OrderMend
+ * @package PaidRadar
  */
 
-namespace OrderMend\Adapters;
+namespace PaidRadar\Adapters;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -18,7 +18,7 @@ class PayPal_Adapter implements Status_Adapter {
 	const LIVE_BASE    = 'https://api-m.paypal.com';
 	const SANDBOX_BASE = 'https://api-m.sandbox.paypal.com';
 
-	const TOKEN_TRANSIENT = 'ordermend_ppcp_token';
+	const TOKEN_TRANSIENT = 'paidradar_ppcp_token';
 
 	/**
 	 * {@inheritDoc}
@@ -40,11 +40,81 @@ class PayPal_Adapter implements Status_Adapter {
 	}
 
 	/**
-	 * Read PPCP settings.
+	 * Resolve PPCP API credentials.
+	 *
+	 * PayPal Payments 4.x rebuilt its settings model: credentials no longer live
+	 * as flat keys in the `woocommerce-ppcp-settings` option. They are exposed
+	 * through the plugin's own settings service as a MerchantConnection DTO
+	 * ({@see \WooCommerce\PayPalCommerce\Settings\DTO\MerchantConnectionDTO}) with
+	 * `is_sandbox` / `client_id` / `client_secret`. We resolve through that
+	 * maintained accessor first (version-proof), then fall back to the flat
+	 * legacy option for PPCP <= 3.x.
 	 *
 	 * @return array{client_id:string,secret:string,sandbox:bool}|null
 	 */
 	protected function get_credentials(): ?array {
+		$modern = $this->get_credentials_modern();
+		if ( null !== $modern ) {
+			return $modern;
+		}
+
+		return $this->get_credentials_legacy();
+	}
+
+	/**
+	 * PPCP >= 4.x credential resolution via the plugin container / settings service.
+	 *
+	 * Uses the maintained MerchantConnection accessor instead of reverse-engineered
+	 * option keys, so it survives internal storage changes. Fails soft (null) when
+	 * PPCP is absent, older, not booted, or the merchant is not connected.
+	 *
+	 * @return array{client_id:string,secret:string,sandbox:bool}|null
+	 */
+	protected function get_credentials_modern(): ?array {
+		if ( ! class_exists( '\WooCommerce\PayPalCommerce\PPCP' ) ) {
+			return null;
+		}
+
+		try {
+			$container = \WooCommerce\PayPalCommerce\PPCP::container();
+			if ( ! is_object( $container ) || ! method_exists( $container, 'get' ) ) {
+				return null;
+			}
+
+			$general = $container->get( 'settings.data.general' );
+			if ( ! is_object( $general ) || ! method_exists( $general, 'get_merchant_data' ) ) {
+				return null;
+			}
+
+			$merchant = $general->get_merchant_data();
+			if ( ! is_object( $merchant ) ) {
+				return null;
+			}
+
+			$client_id = isset( $merchant->client_id ) ? trim( (string) $merchant->client_id ) : '';
+			$secret    = isset( $merchant->client_secret ) ? trim( (string) $merchant->client_secret ) : '';
+			$sandbox   = ! empty( $merchant->is_sandbox );
+
+			if ( '' === $client_id || '' === $secret ) {
+				return null;
+			}
+
+			return array(
+				'client_id' => $client_id,
+				'secret'    => $secret,
+				'sandbox'   => $sandbox,
+			);
+		} catch ( \Throwable $e ) {
+			return null;
+		}
+	}
+
+	/**
+	 * PPCP <= 3.x credential resolution from the flat legacy option.
+	 *
+	 * @return array{client_id:string,secret:string,sandbox:bool}|null
+	 */
+	protected function get_credentials_legacy(): ?array {
 		$settings = get_option( 'woocommerce-ppcp-settings' );
 		if ( ! is_array( $settings ) ) {
 			return null;

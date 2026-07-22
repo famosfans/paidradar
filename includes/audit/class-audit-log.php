@@ -2,15 +2,15 @@
 /**
  * Audit log data access.
  *
- * @package OrderMend
+ * @package PaidRadar
  */
 
-namespace OrderMend\Audit;
+namespace PaidRadar\Audit;
 
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Insert / query / export for the {$wpdb->prefix}ordermend_log table.
+ * Insert / query / export for the {$wpdb->prefix}paidradar_log table.
  */
 class Audit_Log {
 
@@ -21,7 +21,7 @@ class Audit_Log {
 	 */
 	public function table(): string {
 		global $wpdb;
-		return $wpdb->prefix . 'ordermend_log';
+		return $wpdb->prefix . 'paidradar_log';
 	}
 
 	/**
@@ -140,7 +140,7 @@ class Audit_Log {
 			return (int) $wpdb->get_var( $wpdb->prepare( $sql, $params ) );
 		}
 
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared -- Static query, only the internal table name is interpolated; no user input.
 		return (int) $wpdb->get_var( $sql );
 	}
 
@@ -156,19 +156,44 @@ class Audit_Log {
 
 		$columns = array( 'id', 'order_id', 'gateway', 'event', 'psp_status', 'status_before', 'status_after', 'amount', 'currency', 'actor', 'created_at' );
 
-		$fh = fopen( 'php://temp', 'r+' );
-		fputcsv( $fh, $columns );
+		$lines = array( $this->csv_row( $columns ) );
 		foreach ( $rows as $row ) {
 			$line = array();
 			foreach ( $columns as $col ) {
 				$line[] = $row[ $col ] ?? '';
 			}
-			fputcsv( $fh, $line );
+			$lines[] = $this->csv_row( $line );
 		}
-		rewind( $fh );
-		$csv = stream_get_contents( $fh );
-		fclose( $fh );
 
-		return (string) $csv;
+		return implode( "\r\n", $lines ) . "\r\n";
+	}
+
+	/**
+	 * Build a single RFC-4180 CSV line without filesystem functions.
+	 *
+	 * Quotes fields containing separators/quotes/newlines and neutralizes
+	 * spreadsheet formula-injection by prefixing risky leading characters.
+	 *
+	 * @param array<int,mixed> $fields Field values.
+	 * @return string
+	 */
+	private function csv_row( array $fields ): string {
+		$escaped = array();
+		foreach ( $fields as $field ) {
+			$value = (string) $field;
+
+			// CSV formula-injection guard (=, +, -, @, tab, CR).
+			if ( '' !== $value && preg_match( '/^[=+\-@\t\r]/', $value ) ) {
+				$value = "'" . $value;
+			}
+
+			if ( preg_match( '/["\r\n,]/', $value ) ) {
+				$value = '"' . str_replace( '"', '""', $value ) . '"';
+			}
+
+			$escaped[] = $value;
+		}
+
+		return implode( ',', $escaped );
 	}
 }

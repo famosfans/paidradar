@@ -1,0 +1,18 @@
+# Nicht ins Ship-Zip (nur Runtime-Files gehen zu WP.org)
+/.git
+/.github
+/.gitignore
+/.distignore
+/tests
+/vendor
+/node_modules
+/.wp-env.json
+/.wp-env.override.json
+/.wp-env-home
+/.secrets
+/composer.json
+/composer.lock
+/phpunit.xml.dist
+/.phpunit.result.cache
+/NEXT-STEPS.md
+/README.md

@@ -2,10 +2,10 @@
 /**
  * Plugin activation: audit table + default options.
  *
- * @package OrderMend
+ * @package PaidRadar
  */
 
-namespace OrderMend;
+namespace PaidRadar;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -21,10 +21,10 @@ class Activator {
 	 */
 	public static function default_options() {
 		return array(
-			'ordermend_lookback_days'   => 14,
-			'ordermend_batch_size'      => 50,
-			'ordermend_enabled_gateways' => array( 'stripe', 'stripe_cc', 'ppcp-gateway', 'paypal' ),
-			'ordermend_alert_email'     => get_option( 'admin_email' ),
+			'paidradar_lookback_days'   => 14,
+			'paidradar_batch_size'      => 50,
+			'paidradar_enabled_gateways' => array( 'stripe', 'stripe_cc', 'ppcp-gateway', 'paypal' ),
+			'paidradar_alert_email'     => get_option( 'admin_email' ),
 		);
 	}
 
@@ -48,7 +48,7 @@ class Activator {
 
 		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 
-		$table           = $wpdb->prefix . 'ordermend_log';
+		$table           = $wpdb->prefix . 'paidradar_log';
 		$charset_collate = $wpdb->get_charset_collate();
 
 		$sql = "CREATE TABLE {$table} (
@@ -72,7 +72,7 @@ class Activator {
 
 		dbDelta( $sql );
 
-		update_option( 'ordermend_db_version', ORDERMEND_VERSION );
+		update_option( 'paidradar_db_version', PAIDRADAR_VERSION );
 	}
 
 	/**

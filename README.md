@@ -1,4 +1,4 @@
-# OrderMend – WooCommerce Payment Recovery & Stuck Order Fix
+# PaidRadar – WooCommerce Payment Recovery & Stuck Order Fix
 
 Self-hosted WooCommerce plugin that finds orders stuck in **pending / on-hold / failed** whose payment actually **succeeded at the gateway** (missed webhook), re-queries the gateway API **read-only**, completes them correctly via `WC_Order::payment_complete()`, writes a full audit trail, and alerts the admin.
 
@@ -29,7 +29,7 @@ composer test        # or: ./vendor/bin/phpunit
 composer lint
 ```
 
-The site is served at `http://localhost:8888` (admin at `/wp-admin`, user/pass `admin` / `password`). Configure the plugin under **WooCommerce → OrderMend**.
+The site is served at `http://localhost:8888` (admin at `/wp-admin`, user/pass `admin` / `password`). Configure the plugin under **WooCommerce → PaidRadar**.
 
 ## How it works
 
@@ -49,15 +49,15 @@ Conservative by default: only an unambiguous PAID with a transaction id ever com
 
 ## Where the audit trail lives
 
-A dedicated table **`{$wpdb->prefix}ordermend_log`** (e.g. `wp_ordermend_log`), created on activation via `dbDelta`. Columns: `order_id, gateway, event, psp_status, status_before, status_after, amount, currency, psp_response (JSON snapshot), actor (cron|manual), created_at`. View and export it (CSV) under **WooCommerce → OrderMend**.
+A dedicated table **`{$wpdb->prefix}paidradar_log`** (e.g. `wp_paidradar_log`), created on activation via `dbDelta`. Columns: `order_id, gateway, event, psp_status, status_before, status_after, amount, currency, psp_response (JSON snapshot), actor (cron|manual), created_at`. View and export it (CSV) under **WooCommerce → PaidRadar**.
 
 ## Project layout
 
 ```
-ordermend.php                 Bootstrap: header, HPOS declaration, autoloader, activation, boot
+paidradar.php                 Bootstrap: header, HPOS declaration, autoloader, activation, boot
 uninstall.php                 Opt-in data teardown
 includes/
-  class-ordermend.php         Singleton container / hook wiring
+  class-paidradar.php         Singleton container / hook wiring
   class-activator.php         dbDelta table + default options
   adapters/                   Status_Adapter interface, Payment_Status VO, Stripe/PayPal, registry
   recovery/                   Order_Scanner, Reconciler, Recovery_Lock

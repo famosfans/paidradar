@@ -19,3 +19,7 @@ package-lock.json
 .vscode/
 *.swp
 .DS_Store
+
+# Local secrets (never commit)
+/.secrets/
+*.secrets.env

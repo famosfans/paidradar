@@ -2,24 +2,24 @@
 /**
  * Unit tests for the reconciliation decision matrix.
  *
- * @package OrderMend
+ * @package PaidRadar
  */
 
-namespace OrderMend\Tests\Unit;
+namespace PaidRadar\Tests\Unit;
 
 use Brain\Monkey;
 use Brain\Monkey\Functions;
 use Mockery;
-use OrderMend\Adapters\Adapter_Registry;
-use OrderMend\Adapters\Payment_Status;
-use OrderMend\Adapters\Status_Adapter;
-use OrderMend\Audit\Audit_Log;
-use OrderMend\Recovery\Recovery_Lock;
-use OrderMend\Recovery\Reconciler;
+use PaidRadar\Adapters\Adapter_Registry;
+use PaidRadar\Adapters\Payment_Status;
+use PaidRadar\Adapters\Status_Adapter;
+use PaidRadar\Audit\Audit_Log;
+use PaidRadar\Recovery\Recovery_Lock;
+use PaidRadar\Recovery\Reconciler;
 use PHPUnit\Framework\TestCase;
 
 /**
- * @covers \OrderMend\Recovery\Reconciler
+ * @covers \PaidRadar\Recovery\Reconciler
  */
 class ReconcilerTest extends TestCase {
 

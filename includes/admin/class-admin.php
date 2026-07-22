@@ -2,26 +2,26 @@
 /**
  * Admin UI: menu, status card, settings, audit table, "Check now".
  *
- * @package OrderMend
+ * @package PaidRadar
  */
 
-namespace OrderMend\Admin;
+namespace PaidRadar\Admin;
 
-use OrderMend\Audit\Audit_Log;
-use OrderMend\Audit\Audit_List_Table;
-use OrderMend\Scheduler\Scheduler;
+use PaidRadar\Audit\Audit_Log;
+use PaidRadar\Audit\Audit_List_Table;
+use PaidRadar\Scheduler\Scheduler;
 
 defined( 'ABSPATH' ) || exit;
 
 /**
- * WooCommerce submenu page for OrderMend.
+ * WooCommerce submenu page for PaidRadar.
  */
 class Admin {
 
-	const MENU_SLUG        = 'ordermend';
-	const CHECK_ACTION     = 'ordermend_check_now';
-	const SETTINGS_ACTION  = 'ordermend_save_settings';
-	const EXPORT_ACTION    = 'ordermend_export_csv';
+	const MENU_SLUG        = 'paidradar';
+	const CHECK_ACTION     = 'paidradar_check_now';
+	const SETTINGS_ACTION  = 'paidradar_save_settings';
+	const EXPORT_ACTION    = 'paidradar_export_csv';
 	const CAPABILITY       = 'manage_woocommerce';
 
 	/**
@@ -69,8 +69,8 @@ class Admin {
 	public function register_menu() {
 		add_submenu_page(
 			'woocommerce',
-			__( 'OrderMend', 'ordermend' ),
-			__( 'OrderMend', 'ordermend' ),
+			__( 'PaidRadar', 'paidradar' ),
+			__( 'PaidRadar', 'paidradar' ),
 			self::CAPABILITY,
 			self::MENU_SLUG,
 			array( $this, 'render_page' )
@@ -84,7 +84,7 @@ class Admin {
 	 */
 	public function handle_check_now() {
 		if ( ! current_user_can( self::CAPABILITY ) ) {
-			wp_die( esc_html__( 'Insufficient permissions.', 'ordermend' ) );
+			wp_die( esc_html__( 'Insufficient permissions.', 'paidradar' ) );
 		}
 		check_admin_referer( self::CHECK_ACTION );
 
@@ -93,7 +93,7 @@ class Admin {
 		$redirect = add_query_arg(
 			array(
 				'page'            => self::MENU_SLUG,
-				'ordermend_ran'   => 1,
+				'paidradar_ran'   => 1,
 				'recovered'       => (int) $summary['recovered'],
 				'scanned'         => (int) $summary['scanned'],
 			),
@@ -110,29 +110,29 @@ class Admin {
 	 */
 	public function handle_save_settings() {
 		if ( ! current_user_can( self::CAPABILITY ) ) {
-			wp_die( esc_html__( 'Insufficient permissions.', 'ordermend' ) );
+			wp_die( esc_html__( 'Insufficient permissions.', 'paidradar' ) );
 		}
 		check_admin_referer( self::SETTINGS_ACTION );
 
-		$lookback = isset( $_POST['ordermend_lookback_days'] ) ? absint( wp_unslash( $_POST['ordermend_lookback_days'] ) ) : 14;
+		$lookback = isset( $_POST['paidradar_lookback_days'] ) ? absint( wp_unslash( $_POST['paidradar_lookback_days'] ) ) : 14;
 		$lookback = max( 1, min( 365, $lookback ) );
-		update_option( 'ordermend_lookback_days', $lookback );
+		update_option( 'paidradar_lookback_days', $lookback );
 
 		$all_gateways = array( 'stripe', 'stripe_cc', 'ppcp-gateway', 'paypal' );
-		$gateways     = isset( $_POST['ordermend_enabled_gateways'] ) ? array_map( 'sanitize_text_field', (array) wp_unslash( $_POST['ordermend_enabled_gateways'] ) ) : array();
+		$gateways     = isset( $_POST['paidradar_enabled_gateways'] ) ? array_map( 'sanitize_text_field', (array) wp_unslash( $_POST['paidradar_enabled_gateways'] ) ) : array();
 		$gateways     = array_values( array_intersect( $gateways, $all_gateways ) );
 		if ( empty( $gateways ) ) {
 			$gateways = $all_gateways;
 		}
-		update_option( 'ordermend_enabled_gateways', $gateways );
+		update_option( 'paidradar_enabled_gateways', $gateways );
 
-		$email = isset( $_POST['ordermend_alert_email'] ) ? sanitize_email( wp_unslash( $_POST['ordermend_alert_email'] ) ) : '';
-		update_option( 'ordermend_alert_email', $email );
+		$email = isset( $_POST['paidradar_alert_email'] ) ? sanitize_email( wp_unslash( $_POST['paidradar_alert_email'] ) ) : '';
+		update_option( 'paidradar_alert_email', $email );
 
 		$redirect = add_query_arg(
 			array(
 				'page'            => self::MENU_SLUG,
-				'ordermend_saved' => 1,
+				'paidradar_saved' => 1,
 			),
 			admin_url( 'admin.php' )
 		);
@@ -147,7 +147,7 @@ class Admin {
 	 */
 	public function handle_export_csv() {
 		if ( ! current_user_can( self::CAPABILITY ) ) {
-			wp_die( esc_html__( 'Insufficient permissions.', 'ordermend' ) );
+			wp_die( esc_html__( 'Insufficient permissions.', 'paidradar' ) );
 		}
 		check_admin_referer( self::EXPORT_ACTION );
 
@@ -155,7 +155,7 @@ class Admin {
 
 		nocache_headers();
 		header( 'Content-Type: text/csv; charset=utf-8' );
-		header( 'Content-Disposition: attachment; filename=ordermend-audit-' . gmdate( 'Ymd-His' ) . '.csv' );
+		header( 'Content-Disposition: attachment; filename=paidradar-audit-' . gmdate( 'Ymd-His' ) . '.csv' );
 		echo $csv; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- CSV payload.
 		exit;
 	}
@@ -170,35 +170,35 @@ class Admin {
 			return;
 		}
 
-		$last_run  = (int) get_option( 'ordermend_last_run', 0 );
-		$summary   = get_option( 'ordermend_last_run_summary', array() );
-		$lifetime  = (float) get_option( 'ordermend_recovered_lifetime_total', 0 );
-		$lookback  = (int) get_option( 'ordermend_lookback_days', 14 );
-		$email     = (string) get_option( 'ordermend_alert_email', get_option( 'admin_email' ) );
-		$enabled   = (array) get_option( 'ordermend_enabled_gateways', array( 'stripe', 'stripe_cc', 'ppcp-gateway', 'paypal' ) );
+		$last_run  = (int) get_option( 'paidradar_last_run', 0 );
+		$summary   = get_option( 'paidradar_last_run_summary', array() );
+		$lifetime  = (float) get_option( 'paidradar_recovered_lifetime_total', 0 );
+		$lookback  = (int) get_option( 'paidradar_lookback_days', 14 );
+		$email     = (string) get_option( 'paidradar_alert_email', get_option( 'admin_email' ) );
+		$enabled   = (array) get_option( 'paidradar_enabled_gateways', array( 'stripe', 'stripe_cc', 'ppcp-gateway', 'paypal' ) );
 
 		$last_run_label = $last_run > 0
 			// translators: %s human-readable time difference.
-			? sprintf( __( '%s ago', 'ordermend' ), human_time_diff( $last_run, time() ) )
-			: __( 'never', 'ordermend' );
+			? sprintf( __( '%s ago', 'paidradar' ), human_time_diff( $last_run, time() ) )
+			: __( 'never', 'paidradar' );
 
 		$gateways = array(
-			'stripe'       => __( 'Stripe', 'ordermend' ),
-			'stripe_cc'    => __( 'Stripe (cards)', 'ordermend' ),
-			'ppcp-gateway' => __( 'PayPal (PPCP)', 'ordermend' ),
-			'paypal'       => __( 'PayPal (legacy)', 'ordermend' ),
+			'stripe'       => __( 'Stripe', 'paidradar' ),
+			'stripe_cc'    => __( 'Stripe (cards)', 'paidradar' ),
+			'ppcp-gateway' => __( 'PayPal (PPCP)', 'paidradar' ),
+			'paypal'       => __( 'PayPal (legacy)', 'paidradar' ),
 		);
 
 		?>
 		<div class="wrap">
-			<h1><?php esc_html_e( 'OrderMend – Payment Recovery', 'ordermend' ); ?></h1>
+			<h1><?php esc_html_e( 'PaidRadar – Payment Recovery', 'paidradar' ); ?></h1>
 
-			<?php if ( isset( $_GET['ordermend_ran'] ) ) : // phpcs:ignore WordPress.Security.NonceVerification.Recommended ?>
+			<?php if ( isset( $_GET['paidradar_ran'] ) ) : // phpcs:ignore WordPress.Security.NonceVerification.Recommended ?>
 				<div class="notice notice-success is-dismissible"><p>
 					<?php
 					printf(
 						/* translators: 1: recovered count, 2: scanned count. */
-						esc_html__( 'Scan complete. %1$d order(s) recovered out of %2$d checked.', 'ordermend' ),
+						esc_html__( 'Scan complete. %1$d order(s) recovered out of %2$d checked.', 'paidradar' ),
 						(int) ( $_GET['recovered'] ?? 0 ), // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 						(int) ( $_GET['scanned'] ?? 0 ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 					);
@@ -206,33 +206,33 @@ class Admin {
 				</p></div>
 			<?php endif; ?>
 
-			<?php if ( isset( $_GET['ordermend_saved'] ) ) : // phpcs:ignore WordPress.Security.NonceVerification.Recommended ?>
-				<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'Settings saved.', 'ordermend' ); ?></p></div>
+			<?php if ( isset( $_GET['paidradar_saved'] ) ) : // phpcs:ignore WordPress.Security.NonceVerification.Recommended ?>
+				<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'Settings saved.', 'paidradar' ); ?></p></div>
 			<?php endif; ?>
 
-			<div class="ordermend-status-card" style="display:flex;gap:24px;margin:16px 0;padding:16px;background:#fff;border:1px solid #ccd0d4;">
+			<div class="paidradar-status-card" style="display:flex;gap:24px;margin:16px 0;padding:16px;background:#fff;border:1px solid #ccd0d4;">
 				<div>
-					<strong><?php esc_html_e( 'Last run', 'ordermend' ); ?></strong><br>
+					<strong><?php esc_html_e( 'Last run', 'paidradar' ); ?></strong><br>
 					<?php echo esc_html( $last_run_label ); ?>
 				</div>
 				<div>
-					<strong><?php esc_html_e( 'Recovered (total)', 'ordermend' ); ?></strong><br>
+					<strong><?php esc_html_e( 'Recovered (total)', 'paidradar' ); ?></strong><br>
 					<?php echo esc_html( number_format_i18n( $lifetime, 2 ) ); ?>
 				</div>
 				<div>
-					<strong><?php esc_html_e( 'Last scan', 'ordermend' ); ?></strong><br>
+					<strong><?php esc_html_e( 'Last scan', 'paidradar' ); ?></strong><br>
 					<?php
 					if ( ! empty( $summary ) ) {
 						printf(
 							/* translators: 1: scanned, 2: recovered, 3: drift, 4: failed. */
-							esc_html__( '%1$d scanned · %2$d recovered · %3$d drift · %4$d failed', 'ordermend' ),
+							esc_html__( '%1$d scanned · %2$d recovered · %3$d drift · %4$d failed', 'paidradar' ),
 							(int) ( $summary['scanned'] ?? 0 ),
 							(int) ( $summary['recovered'] ?? 0 ),
 							(int) ( $summary['drift'] ?? 0 ),
 							(int) ( $summary['failed'] ?? 0 )
 						);
 					} else {
-						esc_html_e( 'No scan yet.', 'ordermend' );
+						esc_html_e( 'No scan yet.', 'paidradar' );
 					}
 					?>
 				</div>
@@ -240,49 +240,58 @@ class Admin {
 					<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 						<input type="hidden" name="action" value="<?php echo esc_attr( self::CHECK_ACTION ); ?>">
 						<?php wp_nonce_field( self::CHECK_ACTION ); ?>
-						<button type="submit" class="button button-primary"><?php esc_html_e( 'Check now', 'ordermend' ); ?></button>
+						<button type="submit" class="button button-primary"><?php esc_html_e( 'Check now', 'paidradar' ); ?></button>
 					</form>
 				</div>
 			</div>
 
-			<h2><?php esc_html_e( 'Settings', 'ordermend' ); ?></h2>
+			<h2><?php esc_html_e( 'Settings', 'paidradar' ); ?></h2>
 			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 				<input type="hidden" name="action" value="<?php echo esc_attr( self::SETTINGS_ACTION ); ?>">
 				<?php wp_nonce_field( self::SETTINGS_ACTION ); ?>
 				<table class="form-table" role="presentation">
 					<tr>
-						<th scope="row"><label for="ordermend_lookback_days"><?php esc_html_e( 'Look-back window (days)', 'ordermend' ); ?></label></th>
-						<td><input name="ordermend_lookback_days" id="ordermend_lookback_days" type="number" min="1" max="365" value="<?php echo esc_attr( (string) $lookback ); ?>" class="small-text">
-							<p class="description"><?php esc_html_e( 'Only orders created within this many days are scanned.', 'ordermend' ); ?></p></td>
+						<th scope="row"><label for="paidradar_lookback_days"><?php esc_html_e( 'Look-back window (days)', 'paidradar' ); ?></label></th>
+						<td><input name="paidradar_lookback_days" id="paidradar_lookback_days" type="number" min="1" max="365" value="<?php echo esc_attr( (string) $lookback ); ?>" class="small-text">
+							<p class="description"><?php esc_html_e( 'Only orders created within this many days are scanned.', 'paidradar' ); ?></p></td>
 					</tr>
 					<tr>
-						<th scope="row"><?php esc_html_e( 'Enabled gateways', 'ordermend' ); ?></th>
+						<th scope="row"><?php esc_html_e( 'Enabled gateways', 'paidradar' ); ?></th>
 						<td>
 							<?php foreach ( $gateways as $slug => $label ) : ?>
 								<label style="display:block;margin-bottom:4px;">
-									<input type="checkbox" name="ordermend_enabled_gateways[]" value="<?php echo esc_attr( $slug ); ?>" <?php checked( in_array( $slug, $enabled, true ) ); ?>>
+									<input type="checkbox" name="paidradar_enabled_gateways[]" value="<?php echo esc_attr( $slug ); ?>" <?php checked( in_array( $slug, $enabled, true ) ); ?>>
 									<?php echo esc_html( $label ); ?>
 								</label>
 							<?php endforeach; ?>
 						</td>
 					</tr>
 					<tr>
-						<th scope="row"><label for="ordermend_alert_email"><?php esc_html_e( 'Alert e-mail', 'ordermend' ); ?></label></th>
-						<td><input name="ordermend_alert_email" id="ordermend_alert_email" type="email" value="<?php echo esc_attr( $email ); ?>" class="regular-text">
-							<p class="description"><?php esc_html_e( 'Where recovery alerts are sent. Leave empty to disable e-mail alerts.', 'ordermend' ); ?></p></td>
+						<th scope="row"><label for="paidradar_alert_email"><?php esc_html_e( 'Alert e-mail', 'paidradar' ); ?></label></th>
+						<td><input name="paidradar_alert_email" id="paidradar_alert_email" type="email" value="<?php echo esc_attr( $email ); ?>" class="regular-text">
+							<p class="description"><?php esc_html_e( 'Where recovery alerts are sent. Leave empty to disable e-mail alerts.', 'paidradar' ); ?></p></td>
 					</tr>
 				</table>
-				<?php submit_button( __( 'Save settings', 'ordermend' ) ); ?>
+				<?php submit_button( __( 'Save settings', 'paidradar' ) ); ?>
 			</form>
 
 			<h2 style="display:flex;align-items:center;gap:12px;">
-				<?php esc_html_e( 'Audit log', 'ordermend' ); ?>
-				<a class="button" href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=' . self::EXPORT_ACTION ), self::EXPORT_ACTION ) ); ?>"><?php esc_html_e( 'Export CSV', 'ordermend' ); ?></a>
+				<?php esc_html_e( 'Audit log', 'paidradar' ); ?>
+				<a class="button" href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=' . self::EXPORT_ACTION ), self::EXPORT_ACTION ) ); ?>"><?php esc_html_e( 'Export CSV', 'paidradar' ); ?></a>
 			</h2>
 			<?php
 			$table = new Audit_List_Table( $this->audit );
 			$table->prepare_items();
 			$table->display();
+
+			/**
+			 * Fires at the bottom of the PaidRadar admin page, after the audit log.
+			 *
+			 * Extensions (PaidRadar Pro) render their own settings sections here.
+			 * They must handle their own form submission via a dedicated
+			 * `admin_post_*` action with its own nonce — never reuse the core form.
+			 */
+			do_action( 'paidradar_admin_sections' );
 			?>
 		</div>
 		<?php

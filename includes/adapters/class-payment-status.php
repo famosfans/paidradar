@@ -2,10 +2,10 @@
 /**
  * Normalized payment status value object.
  *
- * @package OrderMend
+ * @package PaidRadar
  */
 
-namespace OrderMend\Adapters;
+namespace PaidRadar\Adapters;
 
 defined( 'ABSPATH' ) || exit;
 

@@ -2,10 +2,10 @@
 /**
  * Candidate order scanner.
  *
- * @package OrderMend
+ * @package PaidRadar
  */
 
-namespace OrderMend\Recovery;
+namespace PaidRadar\Recovery;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -33,18 +33,32 @@ class Order_Scanner {
 	public function get_candidates( array $overrides = array() ): array {
 		$lookback = isset( $overrides['lookback_days'] )
 			? (int) $overrides['lookback_days']
-			: (int) get_option( 'ordermend_lookback_days', 14 );
+			: (int) get_option( 'paidradar_lookback_days', 14 );
 		$lookback = max( 1, $lookback );
 
 		$batch = isset( $overrides['batch_size'] )
 			? (int) $overrides['batch_size']
-			: (int) get_option( 'ordermend_batch_size', 50 );
+			: (int) get_option( 'paidradar_batch_size', 50 );
 		$batch = max( 1, $batch );
 
 		$gateways = isset( $overrides['gateways'] )
 			? (array) $overrides['gateways']
-			: (array) get_option( 'ordermend_enabled_gateways', $this->supported_methods );
+			: (array) get_option( 'paidradar_enabled_gateways', $this->supported_methods );
 		$gateways = array_values( array_intersect( $gateways, $this->supported_methods ) );
+		if ( empty( $gateways ) ) {
+			$gateways = $this->supported_methods;
+		}
+
+		/**
+		 * Filter the payment-method ids included in a recovery scan.
+		 *
+		 * Extensions (PaidRadar Pro) append the gateways their own adapters
+		 * support (e.g. `mollie`). An adapter for the gateway must be registered
+		 * via the `paidradar_loaded` action, otherwise its orders are skipped.
+		 *
+		 * @param string[] $gateways Enabled core gateways for this scan.
+		 */
+		$gateways = array_values( array_unique( array_filter( (array) apply_filters( 'paidradar_scan_gateways', $gateways ) ) ) );
 		if ( empty( $gateways ) ) {
 			$gateways = $this->supported_methods;
 		}

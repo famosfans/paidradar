@@ -1,8 +1,8 @@
 <?php
 /**
- * PHPUnit bootstrap for OrderMend unit tests (Brain Monkey, no WP install).
+ * PHPUnit bootstrap for PaidRadar unit tests (Brain Monkey, no WP install).
  *
- * @package OrderMend
+ * @package PaidRadar
  */
 
 // Composer autoload (phpunit, brain/monkey, mockery).

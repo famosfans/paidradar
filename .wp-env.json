@@ -2,7 +2,9 @@
 	"core": "WordPress/WordPress",
 	"phpVersion": "8.1",
 	"plugins": [
-		"WooCommerce",
+		"https://downloads.wordpress.org/plugin/woocommerce.zip",
+		"https://downloads.wordpress.org/plugin/woocommerce-gateway-stripe.zip",
+		"https://downloads.wordpress.org/plugin/woocommerce-paypal-payments.zip",
 		"."
 	],
 	"config": {
@@ -11,6 +13,6 @@
 		"WP_DEBUG_DISPLAY": false
 	},
 	"lifecycleScripts": {
-		"afterStart": "wp-env run cli wp plugin activate woocommerce ordermend && wp-env run cli wp option update woocommerce_custom_orders_table_enabled yes && wp-env run cli wp option update woocommerce_feature_custom_order_tables_enabled yes"
+		"afterStart": "wp-env run cli wp plugin activate woocommerce woocommerce-gateway-stripe woocommerce-paypal-payments paidradar && wp-env run cli wp option update woocommerce_custom_orders_table_enabled yes && wp-env run cli wp option update woocommerce_feature_custom_order_tables_enabled yes"
 	}
 }

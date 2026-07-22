@@ -2,10 +2,10 @@
 /**
  * Per-order recovery lock (idempotency).
  *
- * @package OrderMend
+ * @package PaidRadar
  */
 
-namespace OrderMend\Recovery;
+namespace PaidRadar\Recovery;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -15,7 +15,7 @@ defined( 'ABSPATH' ) || exit;
  */
 class Recovery_Lock {
 
-	const META_KEY       = '_ordermend_recovering';
+	const META_KEY       = '_paidradar_recovering';
 	const TRANSIENT_TTL  = 300; // 5 minutes.
 
 	/**
@@ -60,6 +60,6 @@ class Recovery_Lock {
 	 * @return string
 	 */
 	private function transient_key( int $order_id ): string {
-		return 'ordermend_lock_' . $order_id;
+		return 'paidradar_lock_' . $order_id;
 	}
 }

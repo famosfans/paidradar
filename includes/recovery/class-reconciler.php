@@ -2,14 +2,14 @@
 /**
  * Core reconciliation loop.
  *
- * @package OrderMend
+ * @package PaidRadar
  */
 
-namespace OrderMend\Recovery;
+namespace PaidRadar\Recovery;
 
-use OrderMend\Adapters\Adapter_Registry;
-use OrderMend\Adapters\Payment_Status;
-use OrderMend\Audit\Audit_Log;
+use PaidRadar\Adapters\Adapter_Registry;
+use PaidRadar\Adapters\Payment_Status;
+use PaidRadar\Audit\Audit_Log;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -112,9 +112,9 @@ class Reconciler {
 			}
 		}
 
-		update_option( 'ordermend_last_run', time() );
+		update_option( 'paidradar_last_run', time() );
 		update_option(
-			'ordermend_last_run_summary',
+			'paidradar_last_run_summary',
 			array(
 				'scanned'         => $summary['scanned'],
 				'recovered'       => $summary['recovered'],
@@ -127,10 +127,10 @@ class Reconciler {
 		);
 
 		if ( $summary['recovered'] > 0 ) {
-			$total = (float) get_option( 'ordermend_recovered_lifetime_total', 0 );
-			update_option( 'ordermend_recovered_lifetime_total', $total + $summary['recovered_total'] );
+			$total = (float) get_option( 'paidradar_recovered_lifetime_total', 0 );
+			update_option( 'paidradar_recovered_lifetime_total', $total + $summary['recovered_total'] );
 			// Stash for the admin notice after a run.
-			set_transient( 'ordermend_recent_recoveries', $summary['recovered_orders'], DAY_IN_SECONDS );
+			set_transient( 'paidradar_recent_recoveries', $summary['recovered_orders'], DAY_IN_SECONDS );
 		}
 
 		return $summary;
@@ -167,6 +167,18 @@ class Reconciler {
 
 				$after = $order->get_status();
 				$this->audit->record( $this->row( $order, 'recovered', $gateway, $status->state, $actor, $status->raw, $before, $after ) );
+
+				/**
+				 * Fires after a paid-but-stuck order was recovered (completed).
+				 *
+				 * Extensions (PaidRadar Pro) use this to send alerts, e.g. to a
+				 * Slack/webhook channel.
+				 *
+				 * @param \WC_Order      $order   The recovered order.
+				 * @param Payment_Status $status  The gateway status that triggered recovery.
+				 * @param string         $gateway Gateway slug (e.g. 'stripe', 'paypal').
+				 */
+				do_action( 'paidradar_order_recovered', $order, $status, $gateway );
 
 				$summary['recovered']++;
 				$summary['recovered_total'] += (float) $order->get_total();
