@@ -5,7 +5,7 @@
  * Description:       Finds WooCommerce orders stuck in pending/on-hold/failed whose payment actually succeeded at the gateway (missed webhook), re-queries the gateway API read-only, completes them correctly, writes an audit trail and alerts the admin. Supports Stripe + PayPal.
  * Version:           1.0.0
  * Author:            famosMedia Technologies Ltd.
- * Author URI:        https://famosmedia.com/
+ * Author URI:        https://famos-media.de/
  * License:           GPL-2.0-or-later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain:       paidradar
