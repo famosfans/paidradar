@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name:       PaidRadar
- * Plugin URI:        https://paidradar.com/
+ * Plugin URI:        https://usepaidradar.com/
  * Description:       Finds WooCommerce orders stuck in pending/on-hold/failed whose payment actually succeeded at the gateway (missed webhook), re-queries the gateway API read-only, completes them correctly, writes an audit trail and alerts the admin. Supports Stripe + PayPal.
  * Version:           1.0.0
  * Author:            famosMedia Technologies Ltd.
@@ -9,7 +9,6 @@
  * License:           GPL-2.0-or-later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain:       paidradar
- * Domain Path:       /languages
  * Requires PHP:      7.4
  * Requires at least: 6.2
  * Requires Plugins:  woocommerce
