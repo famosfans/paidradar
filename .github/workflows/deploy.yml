@@ -1,0 +1,37 @@
+name: Deploy to WordPress.org
+
+# Publishes a tagged GitHub Release to the plugin's WordPress.org SVN repo:
+# code -> trunk + tags/<version>, and .wordpress-org/ images -> SVN /assets.
+# Clean free-core plugin (Model B) - the repo tree IS the shipped payload,
+# so the 10up action deploys it directly (everything except .distignore entries).
+# Requires repo secrets SVN_USERNAME and SVN_PASSWORD (wordpress.org SVN password,
+# NOT the website password - see vault: WordPress.org Plugin-Einreichung, Fallstricke).
+# Only runs after the plugin is approved and the SVN repo exists.
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  deploy:
+    name: Deploy to wordpress.org
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: WordPress Plugin Deploy
+        id: deploy
+        uses: 10up/action-wordpress-plugin-deploy@stable
+        with:
+          generate-zip: true
+        env:
+          SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
+          SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
+          SLUG: paidradar
+
+      - name: Upload release ZIP as a build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: paidradar
+          path: ${{ steps.deploy.outputs.zip-path }}
